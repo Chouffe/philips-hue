@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 
-import datetime
+from datetime import datetime
+from datetime import timezone
 import threading
 import time
 
+import pytz
 from phue import Bridge
 
 
@@ -12,12 +14,23 @@ BATHROOM = 1
 LIVING_ROOM = 2
 BEDROOM = 3
 BRIDGE_IP = '192.168.0.123'
+TIMEZONE = 'Europe/Berlin'
 
 # weekday
 # - 0: monday
 # - 6: sunday
 
 # Schedules
+
+test_data = {
+    'command': 'fade_in',
+    'hour': 18,
+    'minute': 44,
+    'light_id': LIVING_ROOM,
+    'transition_time': 60,  # 30 minutes
+    'weekdays': [5, 6],       # weekend only
+    }
+
 
 wake_up_weekend_data = {
     'command': 'fade_in',
@@ -72,7 +85,7 @@ def should_perform_command(now, schedule_data):
 def schedule(bridge, schedule_data):
   while True:
     time.sleep(1)
-    now = datetime.datetime.now()
+    now = datetime.now(pytz.timezone(TIMEZONE))
 
     if should_perform_command(now, schedule_data):
 
@@ -94,12 +107,12 @@ def main():
   print("Connecting to Bridge")
   bridge = Bridge(BRIDGE_IP)
   print("Connected\n")
-  print("API status")
-  print(bridge.get_api())
+  # print("API status")
+  # print(bridge.get_api())
   print("\n\n")
 
   # Starting Threads
-  for schedule_data in [wake_up_week_data, wake_up_weekend_data, sleep_week_data]:
+  for schedule_data in [test_data, wake_up_week_data, wake_up_weekend_data, sleep_week_data]:
     print("Starting new thread with schedule_data:")
     print(schedule_data)
 
@@ -109,8 +122,10 @@ def main():
         ).start()
 
   # Infinite Loop
-  while 1:
-    pass
+  while True:
+    now = datetime.now(pytz.timezone(TIMEZONE))
+    print(now.strftime('%Y-%m-%d %H:%M:%S'))
+    time.sleep(1)
 
 if __name__ == '__main__':
-   main()
+  main()
