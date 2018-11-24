@@ -22,16 +22,6 @@ TIMEZONE = 'Europe/Berlin'
 
 # Schedules
 
-test_data = {
-    'command': 'fade_in',
-    'hour': 18,
-    'minute': 44,
-    'light_id': LIVING_ROOM,
-    'transition_time': 60,  # 30 minutes
-    'weekdays': [5, 6],       # weekend only
-    }
-
-
 wake_up_weekend_data = {
     'command': 'fade_in',
     'hour': 9,
@@ -44,7 +34,7 @@ wake_up_weekend_data = {
 wake_up_week_data = {
     'command': 'fade_in',
     'hour': 7,
-    'minute': 30,
+    'minute': 45,
     'light_id': BEDROOM,
     'transition_time': 1800,           # 30 minutes
     'weekdays': [0, 1, 2, 3, 4],       # weekend only
@@ -63,16 +53,18 @@ sleep_week_data = {
 # Commands
 
 def fade_in(bridge, light_id, transition_time, bri=254):
-    command = { 'transitiontime' : transition_time,
-                'on' : True,
-                'bri' : bri }
+  command = { 'transitiontime' : transition_time, 'on' : True, 'bri' : bri }
+
+  # Only if light is not `on`
+  if not bridge.get_light(light_id, 'on'):
     bridge.set_light(light_id, command)
 
 
 def fade_out(bridge, light_id, transition_time, bri=1):
-    command = { 'transitiontime' : transition_time,
-                'on' : True,
-                'bri' : bri }
+  command = { 'transitiontime' : transition_time, 'on' : True, 'bri' : bri }
+
+  # Only if light is `on`
+  if bridge.get_light(light_id, 'on'):
     bridge.set_light(light_id, command)
 
 
@@ -112,7 +104,7 @@ def main():
   print("\n\n")
 
   # Starting Threads
-  for schedule_data in [test_data, wake_up_week_data, wake_up_weekend_data, sleep_week_data]:
+  for schedule_data in [wake_up_week_data, wake_up_weekend_data, sleep_week_data]:
     print("Starting new thread with schedule_data:")
     print(schedule_data)
 
@@ -124,8 +116,8 @@ def main():
   # Infinite Loop
   while True:
     now = datetime.now(pytz.timezone(TIMEZONE))
-    print(now.strftime('%Y-%m-%d %H:%M:%S'))
-    time.sleep(1)
+    print(now.strftime('%Y-%m-%d %H:%M'))
+    time.sleep(60)
 
 if __name__ == '__main__':
   main()
